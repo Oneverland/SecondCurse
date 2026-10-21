@@ -1,7 +1,7 @@
 #include "minesweeper.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "/Users/oneverland/C_Projects/readyToUse/lcg.h"
+#include "lcg.h"
 
 int count_opened_cells(const Game *game) {
     int opened_cells = 0;
