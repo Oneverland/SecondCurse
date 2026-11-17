@@ -13,7 +13,7 @@
 #define MIN_DENSITY 3
 #define MAX_DENSITY 12
 #define HISTORY_LIMIT 5
-#define HISTORY_FILE "/Users/oneverland/C_Projects/curse/src/game_history.txt"
+#define HISTORY_FILE "game_history.txt"
 
 typedef enum {
     SCREEN_MENU,
@@ -149,7 +149,7 @@ static void load_history(GameHistory *history) {
     FILE *file;
     char line[128];
     history->count = 0;
-    file = fopen(HISTORY_FILE, "r");
+    file = fopen(TextFormat("%s%s", GetApplicationDirectory(), HISTORY_FILE), "r");
     if (file == NULL) {
         return;
     }
@@ -167,7 +167,7 @@ static void load_history(GameHistory *history) {
 }
 
 static void save_history(const GameHistory *history) {
-    FILE *file = fopen(HISTORY_FILE, "w");
+    FILE *file = fopen(TextFormat("%s%s", GetApplicationDirectory(), HISTORY_FILE), "w");
     if (file == NULL) {
         return;
     }
