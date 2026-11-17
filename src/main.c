@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "lcg.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 900
@@ -363,6 +364,7 @@ static void draw_settings_value_row(const char *label, int value, Rectangle minu
 }
 
 int main(void) {
+    lcgs();
     const Color ink = (Color){32, 44, 62, 255};
     const Color blue = (Color){88, 142, 214, 255};
     const Color blue_hover = (Color){69, 122, 196, 255};

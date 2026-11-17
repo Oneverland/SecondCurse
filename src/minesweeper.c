@@ -55,7 +55,6 @@ int gen(Game *game, int height, int width, int density) {
     game->density = density;
     game->mine_count = 0;
     game->state = GAME_RUNNING;
-    lcgs();
     game->field = calloc(height, sizeof(Cell*));
     if (game->field == NULL) {
         game->state = GAME_ERROR;

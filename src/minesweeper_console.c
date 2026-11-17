@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "lcg.h"
 
-static void print_field(const Game *game, int reveal_mines) {
+void print_field(const Game *game, int reveal_mines) {
     printf("00  ");
     for (int i = 0; i < game->width; i++) {
         printf("%.2d  ", i + 1);
@@ -27,6 +28,7 @@ static void print_field(const Game *game, int reveal_mines) {
 }
 
 int main() {
+    lcgs();
     Game game = {0};
     char command[64];
     char *token = NULL;
@@ -89,5 +91,5 @@ int main() {
     free_field(&game);
     return 0;
 }
-// cc minesweeper_console.c minesweeper.c ../readyToUse/lcg.c -o minesweeper_console
-// ./minesweeper_console
+// cc minesweeper_console.c minesweeper.c lcg.c -o ../build/minesweeper_console
+// ../build/minesweeper_console
