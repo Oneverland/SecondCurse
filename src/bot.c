@@ -30,6 +30,8 @@ void print_field(const Game *game, int reveal_mines) {
 
 int bot_step_one(Game *game, int V) {
     Hint step = giveHint(game);
+    step.x--;
+    step.y--;
     if (V == 1) {printf("%s %d %d\n", step.action == FLAG ? "FLAG" : "OPEN", step.x, step.y);}
     if (step.action == FLAG) {
         set_flag(game, step.x, step.y);
@@ -60,7 +62,7 @@ int bot_steps(Game *game, int x, int V) {
     } else {
         while (game->state == GAME_RUNNING) {
             int result = bot_step_one(game, V);
-            if (result == -1 && game->state != GAME_RUNNING) {
+            if (result == -1) {
                 printf("problem in loop \"while(1)\"\n");
                 return -1;
             }
@@ -68,8 +70,8 @@ int bot_steps(Game *game, int x, int V) {
     }
     return 0;
 }
-// сделал первую версию, не умеет пока ничего кроме решения пошагово (может попасть в тупик, нужен апгрейд giveHint)
-// пока что даже не выполняет первый шаг, причина неизвестна
+// сделал первую версию, не умеет пока ничего кроме решения пошагово (может попасть в тупик не из-за рандома, нужен апгрейд giveHint)
+// 
 int main(void) {
     lcgs();
     Game game = {0};
