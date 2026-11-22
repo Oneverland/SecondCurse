@@ -77,7 +77,7 @@ int gen(Game *game, int height, int width, int density) {
     };
     for (int i = 0; i < height; i++) {
         for (int k = 0; k < width; k++) {
-            if (lcg_easy() % density == 0) {
+            if ((lcg_easy() >> 16) % density == 0) {
                 game->mine_count++;
                 game->field[i][k].isMine = 1;
                 for (int j = 0; j < 8; j++) {
