@@ -4,6 +4,61 @@
 #include <string.h>
 #include "lcg.h"
 
+static int gen_for_tests(Game *game, int height, int width, int count_of_mines) {
+    if (game == NULL || height <= 0 || width <= 0 || count_of_mines <= 0 || height * width < count_of_mines) {
+        return -1;
+    }
+    free_field(game);
+    game->field = NULL;
+    game->height = height;
+    game->width = width;
+    game->density = height * width / count_of_mines;
+    game->mine_count = 0;
+    game->state = GAME_RUNNING;
+    game->field = calloc(height, sizeof(Cell*));
+    if (game->field == NULL) {
+        game->state = GAME_ERROR;
+        return -1;
+    }
+    Cell *data = calloc(height * width, sizeof(Cell));
+    if (game->field == NULL || data == NULL) {
+        free(game->field);
+        game->field = NULL;
+        game->state = GAME_ERROR;
+        return -1;
+    }
+    for (int i = 0; i < height; i++) {
+        game->field[i] = data + i * width;
+    }
+    const int directions[8][2] = {
+        {-1, -1}, {-1, 0}, {-1, 1},
+        {0, -1},           {0, 1},
+        {1, -1},  {1, 0},  {1, 1}
+    };
+    for (int i = 0; i < height; i++) {
+        for (int k = 0; k < width; k++) {
+            int cells_left = (height - i) * width - k;
+            int mines_left = count_of_mines - game->mine_count; 
+            if ((((lcg_easy() >> 16) % (ull)cells_left < (ull)mines_left) || mines_left == cells_left) && mines_left > 0) {
+                game->mine_count++;
+                game->field[i][k].isMine = 1;
+                for (int j = 0; j < 8; j++) {
+                    int nx = i + directions[j][0];
+                    int ny = k + directions[j][1];
+                    if (nx < 0 || nx >= game->height || ny < 0 || ny >= game->width || game->field[nx][ny].isMine == 1) {
+                        continue;
+                    }
+                    game->field[nx][ny].minesAround++;
+                }
+                game->field[i][k].minesAround = 0;
+            } else {
+                game->field[i][k].isMine = 0;
+            }
+        }
+    }
+    return 0;
+}
+
 Hint giveHintPlus(const Game *game);
 
 void print_field(const Game *game, int reveal_mines) {
@@ -244,16 +299,17 @@ int test(int W, int H, int D) {
     char command[64];
     char *token = NULL;
     char *saveptr = NULL;
-    if (gen(&game, H, W, D) != 0) {
+    if (gen_for_tests(&game, H, W, D) != 0) {
         return -1;
     }
     while (open_cell(&game, 8, 8) == GAME_LOSE || count_opened_cells(&game) == 1) {
 p1:
         free_field(&game);
-        if (gen(&game, H, W, D) != 0) {
+        if (gen_for_tests(&game, H, W, D) != 0) {
             return -1;
         }
     }
+    printf("");
     while (1) {
         // print_field(&game, game.state == GAME_LOSE);
         if (game.state == GAME_WIN) {
@@ -272,7 +328,7 @@ p1:
 }
 
 void print_stats(int W, int H, int D, int count, int wins) {
-    printf("Для поля с шириной %d, с высотой %d, плотностью %d получили:\nшанс появления небезопасной ситуации = %.0f%% \
+    printf("Для поля с шириной %d, с высотой %d, кол-вом мин %d получили:\nшанс появления небезопасной ситуации = %.0f%% \
         (побед/из: %d/%d)\n", W, H, D, (int) 100 * ((double) (count-wins)/count), wins, count);
 }
 
