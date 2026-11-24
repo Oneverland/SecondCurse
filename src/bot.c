@@ -5,9 +5,11 @@
 #include "lcg.h"
 
 static int gen_for_tests(Game *game, int height, int width, int count_of_mines) {
-    if (game == NULL || height <= 0 || width <= 0 || count_of_mines <= 0 || height * width < count_of_mines) {
+    // printf("%d %d %d", height, width, count_of_mines);
+    if (game == NULL || height <= 0 || width <= 0 || count_of_mines <= 0) {
         return -1;
     }
+    
     free_field(game);
     game->field = NULL;
     game->height = height;
@@ -302,14 +304,14 @@ int test(int W, int H, int D) {
     if (gen_for_tests(&game, H, W, D) != 0) {
         return -1;
     }
-    while (open_cell(&game, 8, 8) == GAME_LOSE || count_opened_cells(&game) == 1) {
+    while (open_cell(&game, H/2, W/2) == GAME_LOSE || count_opened_cells(&game) == 1) {
 p1:
         free_field(&game);
         if (gen_for_tests(&game, H, W, D) != 0) {
             return -1;
         }
     }
-    printf("");
+  ; // otladka add next time
     while (1) {
         // print_field(&game, game.state == GAME_LOSE);
         if (game.state == GAME_WIN) {
@@ -332,60 +334,47 @@ void print_stats(int W, int H, int D, int count, int wins) {
         (побед/из: %d/%d)\n", W, H, D, (int) 100 * ((double) (count-wins)/count), wins, count);
 }
 
+
+int start_runs(int W, int H, int D, int count) {
+    int winnable = 0;
+    for (int i = 0; i < count; i++) {
+        int result = test(W, H, D);
+        if (result == -1) return -1;
+        if (result == -2) {
+            printf("WTF\n"); 
+            return -1;
+        }
+        if (result == 0) winnable++;
+    }
+    return winnable;
+}
+
+
 int main(void) {
     lcgs();
-    char command[64];
-    char *token = NULL;
-    char *saveptr = NULL;
-    int W = -1;
-    int H = -1;
-    int D = -1;
-    int count = -1;
-    while (1) {
-        if (fgets(command, sizeof(command), stdin) == NULL) {
-            break;
-        }
-        saveptr = NULL;
-        token = strtok_r(command, " \n", &saveptr);
-        if (token == NULL) {
-            continue;
-        }
-        W = -1;
-        H = -1;
-        D = -1;
-        count = -1;
-        if (!strcmp(token, "test")) {
-            token = strtok_r(NULL, " \n", &saveptr);
-            if (token != NULL) {
-                W = atoi(token);
-            }
-            token = strtok_r(NULL, " \n", &saveptr);
-            if (token != NULL) {
-                H = atoi(token);
-            }
-            token = strtok_r(NULL, " \n", &saveptr);
-            if (token != NULL) {
-                D = atoi(token);
-            }
-            token = strtok_r(NULL, " \n", &saveptr);
-            if (token != NULL) {
-                count = atoi(token);
-            }
-            int winnable = 0;
-            for (int i = 0; i < count; i++) {
-                int result = test(W, H, D);
-                if (result == -1) return -1;
-                if (result == -2) {
-                    printf("WTF\n"); 
+    int w1 = 6;
+    int w2 = 12;
+    int h1 = 6;
+    int h2 = 12;
+    int d1 = 1;
+    int d2 = 50;
+    int count = 10;
+    FILE *file = fopen("/Users/oneverland/C_Projects/curse/test_log.txt", "w");
+    if (w1 < 3 || w2 > 128 || h1 < 3 || h2 > 128 || d1 < 1 || d2 > 8192 || count < 1 || count > 100000) return -1;
+    for (int w = w1; w < w2; w++) {
+        for (int h = h1; h < h2; h++) {
+            for (int d = d1; d < d2; d++) {
+                if (w * h <= d * 2 || w > h) continue;
+                int result = start_runs(w, h, d, count);
+                if (result == -1) {
+                    printf("somethings off...\n");
                     return -1;
                 }
-                if (result == 0) winnable++;
+                fprintf(file, "w=%d h=%d m=%d win=%d c=%d chance=%.0f%%\n", w, h, d, result, count, (int) 100 * ((double) (count-result)/count));
             }
-            print_stats(W, H, D, count, winnable);
-        } else if (!strcmp(token, "exit")) {
-            break;
         }
     }
+    fclose(file);
     return 0;
 }
 
